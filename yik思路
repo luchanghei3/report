@@ -1,0 +1,83 @@
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import Table, TableStyle
+from reportlab.lib import colors
+from reportlab.lib.units import mm
+
+def insert_pdf_elements(pdf_path, elements):
+    """
+    elements: 列表，每一项是一个字典，格式如下：
+    {
+        "type": "image" / "text" / "table",
+        "data": 图片路径 / 文本 / 表格二维列表,
+        "x": x坐标 (mm),
+        "y": y坐标 (mm),
+        "width": 宽度 (mm, 可选),
+        "height": 高度 (mm, 可选),
+        "font": 字体名称 (可选, 默认为 Helvetica),
+        "size": 字体大小 (可选, 默认为12)
+    }
+    """
+    c = canvas.Canvas(pdf_path, pagesize=A4)
+    page_width, page_height = A4
+
+    for elem in elements:
+        t = elem.get("type")
+        x = elem.get("x", 0) * mm
+        y = elem.get("y", 0) * mm
+
+        if t == "image":
+            width = elem.get("width", None)
+            height = elem.get("height", None)
+            if width: width *= mm
+            if height: height *= mm
+            c.drawImage(elem["data"], x, y, width=width, height=height)
+
+        elif t == "text":
+            font = elem.get("font", "Helvetica")
+            size = elem.get("size", 12)
+            c.setFont(font, size)
+            c.drawString(x, y, elem["data"])
+
+        elif t == "table":
+            table_data = elem["data"]
+            table = Table(table_data)
+            table.setStyle(TableStyle([
+                ('GRID', (0,0), (-1,-1), 0.5, colors.black),
+                ('FONTNAME', (0,0), (-1,-1), 'Helvetica'),
+                ('FONTSIZE', (0,0), (-1,-1), 10),
+                ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ]))
+            table.wrapOn(c, page_width, page_height)
+            table.drawOn(c, x, y)
+
+    c.save()
+
+# ----------------- 使用示例 -----------------
+elements = [
+    {
+        "type": "image",
+        "data": "gradient_text.png",
+        "x": 20,
+        "y": 250,
+        "width": 150,
+        "height": 50
+    },
+    {
+        "type": "text",
+        "data": "这是普通文字",
+        "x": 20,
+        "y": 200,
+        "font": "Helvetica-Bold",
+        "size": 16
+    },
+    {
+        "type": "table",
+        "data": [["姓名", "年龄"], ["Alice", "30"], ["Bob", "28"]],
+        "x": 20,
+        "y": 100
+    }
+]
+
+insert_pdf_elements("output.pdf", elements)
