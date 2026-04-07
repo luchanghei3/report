@@ -19,14 +19,6 @@ from reportlab.lib.units import inch
 from reportlab.lib.utils import simpleSplit
 
 
-def purple():
-    return colors.Color(0.45, 0.2, 0.6, 1)
-
-
-def light_purple():
-    return colors.Color(0.72, 0.58, 0.85, 1)
-
-
 
 # =========================
 # 全局配置：解决Matplotlib中文显示问题
@@ -282,14 +274,12 @@ def read_cancer_excel_to_table_data(image_dir, styles, gender):
         error_data = [["提示信息"], [error_msg]]
         error_table = Table(error_data, colWidths=[CONTENT_WIDTH * 0.9])
         error_table.setStyle(TableStyle([
-            ("GRID", (0, 0), (-1, -1), 0.5, colors.white),
-            ("PADDING", (0, 0), (-1, -1), 6),
-            ("BACKGROUND", (0, 0), (-1, 0), purple()),
+            ("BACKGROUND", (0, 0), (-1, 0), THEME_COLOR["accent"]),
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-            ("BACKGROUND", (0, 1), (-1, -1), light_purple()),
-            ("TEXTCOLOR", (0, 1), (-1, -1), colors.white),
+            ("BACKGROUND", (0, 1), (-1, -1), THEME_COLOR["secondary"]),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.gray),
+            ("PADDING", (0, 0), (-1, -1), 10),
             ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
             ("FONTNAME", (0, 0), (-1, 0), FONT),
             ("FONTSIZE", (0, 0), (-1, 0), 11),
             ("FONTNAME", (0, 1), (-1, -1), FONT),
@@ -333,17 +323,17 @@ def read_cancer_excel_to_table_data(image_dir, styles, gender):
         # 设置Excel表格专属样式
         # 设置Excel表格专属样式
         excel_table_style = TableStyle([
-            ("GRID", (0, 0), (-1, -1), 0.5, colors.white),
-            ("PADDING", (0, 0), (-1, -1), 6),
-            ("BACKGROUND", (0, 0), (-1, 0), purple()),
-            ("BACKGROUND", (0, 1), (-1, -1), light_purple()),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.Color(0.7, 0.7, 0.7, 1)),
+            ("PADDING", (0, 0), (-1, -1), 8),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [THEME_COLOR["secondary"], colors.white]),
+            # ========== 修改Excel表格表头为淡黄色 ==========
+            ("BACKGROUND", (0, 0), (-1, 0), THEME_COLOR["header_yellow"]),
             ("FONTNAME", (0, 0), (-1, 0), FONT),
             ("FONTSIZE", (0, 0), (-1, 0), 10.5),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),  # 文字改为黑色
             ("FONTWEIGHT", (0, 0), (-1, 0), "bold"),
             ("FONTNAME", (0, 1), (-1, -1), FONT),
             ("FONTSIZE", (0, 1), (-1, -1), 9),
-            ("TEXTCOLOR", (0, 1), (-1, -1), colors.white),
             ("ALIGN", (0, 0), (-1, -1), "CENTER"),
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ])
@@ -358,14 +348,12 @@ def read_cancer_excel_to_table_data(image_dir, styles, gender):
         error_data = [["提示信息"], [error_msg]]
         error_table = Table(error_data, colWidths=[CONTENT_WIDTH * 0.9])
         error_table.setStyle(TableStyle([
-            ("GRID", (0, 0), (-1, -1), 0.5, colors.white),
-            ("PADDING", (0, 0), (-1, -1), 6),
-            ("BACKGROUND", (0, 0), (-1, 0), purple()),
+            ("BACKGROUND", (0, 0), (-1, 0), THEME_COLOR["accent"]),
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-            ("BACKGROUND", (0, 1), (-1, -1), light_purple()),
-            ("TEXTCOLOR", (0, 1), (-1, -1), colors.white),
+            ("BACKGROUND", (0, 1), (-1, -1), THEME_COLOR["secondary"]),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.gray),
+            ("PADDING", (0, 0), (-1, -1), 10),
             ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
             ("FONTNAME", (0, 0), (-1, 0), FONT),
             ("FONTSIZE", (0, 0), (-1, 0), 11),
             ("FONTNAME", (0, 1), (-1, -1), FONT),
@@ -996,27 +984,30 @@ def get_custom_styles():
 def get_table_style(template_type="default"):
     """预定义表格样式模板"""
     base_style = [
-        ("GRID", (0, 0), (-1, -1), 0.5, colors.white),
-        ("PADDING", (0, 0), (-1, -1), 6),
-        ("BACKGROUND", (0, 0), (-1, 0), purple()),
-        ("BACKGROUND", (0, 1), (-1, -1), light_purple()),
+        # 原边框：colors.Color(0.8, 0.8, 0.8, 1)（中灰，对比略强）
+        ("GRID", (0, 0), (-1, -1), 0.5, THEME_COLOR["border_gray"]),  # 改为浅灰边框
+        ("PADDING", (0, 0), (-1, -1), 3),
+        # 原隔行背景：[THEME_COLOR["secondary"], colors.white]
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [THEME_COLOR["secondary"], colors.white]),  # 浅灰+白，更舒缓
+        # ========== 核心修改：表头背景改为淡黄色 ==========
+        ("BACKGROUND", (0, 0), (-1, 0), THEME_COLOR["header_yellow"]),  # 淡黄色表头
         ("FONTNAME", (0, 0), (-1, 0), FONT),
         ("FONTSIZE", (0, 0), (-1, 0), 10.5),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),  # 表头文字改为黑色（提高对比度）
         ("FONTWEIGHT", (0, 0), (-1, 0), "bold"),
         ("FONTNAME", (0, 1), (-1, -1), FONT),
         ("FONTSIZE", (0, 1), (-1, -1), 10),
-        ("TEXTCOLOR", (0, 1), (-1, -1), colors.white),
+        ("TEXTCOLOR", (0, 1), (-1, -1), THEME_COLOR["text"]),  # 深灰文字
         ("ALIGN", (0, 0), (-1, -1), "CENTER"),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
     ]
 
     if template_type == "message":
         base_style.extend([
-            ("BACKGROUND", (0, 0), (-1, 0), purple()),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-            ("BACKGROUND", (0, 1), (-1, -1), light_purple()),
-            ("TEXTCOLOR", (0, 1), (-1, -1), colors.white),
+            # ========== 同步修改message类型表格的表头背景 ==========
+            ("BACKGROUND", (0, 0), (-1, 0), THEME_COLOR["header_yellow"]),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
+            ("BACKGROUND", (0, 1), (-1, -1), THEME_COLOR["secondary"]),
         ])
 
     return TableStyle(base_style)
