@@ -8,7 +8,7 @@ import tempfile
 
 from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, Image,
-    Frame, PageTemplate, NextPageTemplate, BaseDocTemplate
+    Frame, PageTemplate, NextPageTemplate, BaseDocTemplate, Flowable
 )
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
@@ -17,6 +17,14 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.units import inch
 from reportlab.lib.utils import simpleSplit
+
+
+def purple():
+    return colors.Color(0.45, 0.2, 0.6, 1)
+
+
+def light_purple():
+    return colors.Color(0.72, 0.58, 0.85, 1)
 
 
 
@@ -274,12 +282,14 @@ def read_cancer_excel_to_table_data(image_dir, styles, gender):
         error_data = [["提示信息"], [error_msg]]
         error_table = Table(error_data, colWidths=[CONTENT_WIDTH * 0.9])
         error_table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), THEME_COLOR["accent"]),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.white),
+            ("PADDING", (0, 0), (-1, -1), 6),
+            ("BACKGROUND", (0, 0), (-1, 0), purple()),
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-            ("BACKGROUND", (0, 1), (-1, -1), THEME_COLOR["secondary"]),
-            ("GRID", (0, 0), (-1, -1), 0.5, colors.gray),
-            ("PADDING", (0, 0), (-1, -1), 10),
+            ("BACKGROUND", (0, 1), (-1, -1), light_purple()),
+            ("TEXTCOLOR", (0, 1), (-1, -1), colors.white),
             ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
             ("FONTNAME", (0, 0), (-1, 0), FONT),
             ("FONTSIZE", (0, 0), (-1, 0), 11),
             ("FONTNAME", (0, 1), (-1, -1), FONT),
@@ -323,17 +333,17 @@ def read_cancer_excel_to_table_data(image_dir, styles, gender):
         # 设置Excel表格专属样式
         # 设置Excel表格专属样式
         excel_table_style = TableStyle([
-            ("GRID", (0, 0), (-1, -1), 0.5, colors.Color(0.7, 0.7, 0.7, 1)),
-            ("PADDING", (0, 0), (-1, -1), 8),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [THEME_COLOR["secondary"], colors.white]),
-            # ========== 修改Excel表格表头为淡黄色 ==========
-            ("BACKGROUND", (0, 0), (-1, 0), THEME_COLOR["header_yellow"]),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.white),
+            ("PADDING", (0, 0), (-1, -1), 6),
+            ("BACKGROUND", (0, 0), (-1, 0), purple()),
+            ("BACKGROUND", (0, 1), (-1, -1), light_purple()),
             ("FONTNAME", (0, 0), (-1, 0), FONT),
             ("FONTSIZE", (0, 0), (-1, 0), 10.5),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),  # 文字改为黑色
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
             ("FONTWEIGHT", (0, 0), (-1, 0), "bold"),
             ("FONTNAME", (0, 1), (-1, -1), FONT),
             ("FONTSIZE", (0, 1), (-1, -1), 9),
+            ("TEXTCOLOR", (0, 1), (-1, -1), colors.white),
             ("ALIGN", (0, 0), (-1, -1), "CENTER"),
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ])
@@ -348,12 +358,14 @@ def read_cancer_excel_to_table_data(image_dir, styles, gender):
         error_data = [["提示信息"], [error_msg]]
         error_table = Table(error_data, colWidths=[CONTENT_WIDTH * 0.9])
         error_table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), THEME_COLOR["accent"]),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.white),
+            ("PADDING", (0, 0), (-1, -1), 6),
+            ("BACKGROUND", (0, 0), (-1, 0), purple()),
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-            ("BACKGROUND", (0, 1), (-1, -1), THEME_COLOR["secondary"]),
-            ("GRID", (0, 0), (-1, -1), 0.5, colors.gray),
-            ("PADDING", (0, 0), (-1, -1), 10),
+            ("BACKGROUND", (0, 1), (-1, -1), light_purple()),
+            ("TEXTCOLOR", (0, 1), (-1, -1), colors.white),
             ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
             ("FONTNAME", (0, 0), (-1, 0), FONT),
             ("FONTSIZE", (0, 0), (-1, 0), 11),
             ("FONTNAME", (0, 1), (-1, -1), FONT),
@@ -493,7 +505,7 @@ def generate_cancer_screening_narration(elements, styles, cancer_site_stat, exce
     :param hgvs_freq_map: 提前加载的COSMIC频率映射表
     """
     # 添加分述章节标题
-    elements.append(Paragraph("四、突变癌种筛查结果分述", styles["Header2"]))
+    add_subsection_title(elements, "四、突变癌种筛查结果分述")
     
     # ========== 核心修复：读取全局269个位点的映射文件（替代旧的input_df） ==========
     try:
@@ -528,7 +540,7 @@ def generate_cancer_screening_narration(elements, styles, cancer_site_stat, exce
     # 遍历有突变的癌种，生成详细分述
     for idx, (cancer_name, site_count) in enumerate(mutated_cancers.items(), start=1):
         # 癌种小标题
-        elements.append(Paragraph(f"{idx}. {cancer_name}", styles["Header2"]))
+        add_subsection_title(elements, f"{idx}. {cancer_name}")
 
         # 1. 基本突变信息
         elements.append(Paragraph(
@@ -668,7 +680,7 @@ def generate_cancer_screening_narration(elements, styles, cancer_site_stat, exce
         elements.append(Spacer(1, 10))
 
     # 添加总体建议
-    elements.append(Paragraph("<b>总体建议：</b>", styles["Header2"]))
+    add_subsection_title(elements, "总体建议")
     elements.append(Paragraph(
         f"本次检测共发现{len(mutated_cancers)}种癌种存在特异性突变位点，其中高风险{len([k for k, v in mutated_cancers.items() if v >= 10])}种，"
         f"中风险{len([k for k, v in mutated_cancers.items() if 3 <= v < 10])}种，低风险{len([k for k, v in mutated_cancers.items() if v < 3])}种。"
@@ -679,25 +691,25 @@ def generate_cancer_screening_narration(elements, styles, cancer_site_stat, exce
 # 基础配置（路径+字体+视觉主题）
 # =========================
 BASE_DIR = Path(__file__).resolve().parent
-# 字体配置 - 修改为宋体
-FONT_DIR = BASE_DIR / "fonts"
-FONT_DIR.mkdir(exist_ok=True)
-# 宋体字体文件路径（确保simsun.ttf存在于fonts目录）
-FONT_PATH = str(FONT_DIR / "simsun.ttc")  # 宋体文件名通常是simsun.ttf/SimSun.ttf
 
-# 兼容处理：如果字体文件不存在，使用默认字体
-if os.path.exists(FONT_PATH):
-    pdfmetrics.registerFont(TTFont("SimSun", FONT_PATH))  # 注册宋体，字体名称设为"SimSun"
-    FONT = "SimSun"  # 全局字体变量改为宋体
-else:
-    # 备选方案：尝试系统内置宋体（部分环境支持）
-    try:
-        pdfmetrics.registerFont(TTFont("SimSun", "SimSun"))
-        FONT = "SimSun"
-        print(f"⚠️  未找到本地宋体文件，使用系统内置宋体")
-    except:
-        FONT = "Helvetica"
-        print(f"⚠️  宋体字体文件不存在：{FONT_PATH}，使用默认字体")
+def setup_font():
+    # 👇 改成从当前目录的 fonts 文件夹读取
+    font_dir = BASE_DIR / "fonts"
+    yahei = font_dir / "msyh.ttc"
+    simhei = font_dir / "simhei.ttf"
+
+    if os.path.exists(yahei):
+        pdfmetrics.registerFont(TTFont("ReportFont", str(yahei), subfontIndex=0))
+        return "ReportFont"
+    if os.path.exists(simhei):
+        pdfmetrics.registerFont(TTFont("ReportFont", str(simhei)))
+        return "ReportFont"
+
+    # 兜底
+    return "Helvetica"
+
+
+FONT = setup_font()
 
 # 输出目录
 OUTPUT_DIR = BASE_DIR/ "output"
@@ -742,6 +754,75 @@ TOP_MARGIN = 30
 BOTTOM_MARGIN = 30
 CONTENT_WIDTH = PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN
 CONTENT_HEIGHT = PAGE_HEIGHT - TOP_MARGIN - BOTTOM_MARGIN
+
+
+class SectionTitle(Flowable):
+    def __init__(self, title, number, size=28, gap=-8):
+        super().__init__()
+        self.title = title
+        self.number = number
+        self.size = size
+        self.gap = gap
+        self.width = PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN
+        self.height = 42
+
+    def wrap(self, aw, ah):
+        return self.width, self.height
+
+    def draw(self):
+        c = self.canv
+        x = 0
+        y = 20
+
+        def draw_diamond(px, py, color):
+            c.setFillColor(color)
+            c.saveState()
+            c.translate(px, py)
+            c.rotate(45)
+            c.rect(-self.size / 2, -self.size / 2, self.size, self.size, fill=1, stroke=0)
+            c.restoreState()
+
+        draw_diamond(x + self.size / 2, y, light_purple())
+        right_x = x + self.size + self.gap
+        draw_diamond(right_x, y, colors.Color(0.34, 0.28, 0.63, 1))
+
+        c.setFont(FONT, self.size // 2)
+        c.setFillColor(colors.white)
+        c.drawCentredString(right_x, y - (self.size // 4), str(self.number))
+
+        c.setFont(FONT, 26)
+        c.setFillColor(colors.Color(0.34, 0.28, 0.63, 1))
+        c.drawString(right_x + self.size / 2 + 10, y - 8, self.title)
+
+
+class SectionSubtitle(Flowable):
+    def __init__(self, title, font_size=13):
+        super().__init__()
+        self.title = title
+        self.font_size = font_size
+        self.width = PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN
+        self.height = 20
+
+    def wrap(self, aw, ah):
+        return self.width, self.height
+
+    def draw(self):
+        c = self.canv
+        x = 0
+        y = 6
+        arrow_size = 10
+
+        c.setFillColor(purple())
+        path = c.beginPath()
+        path.moveTo(x, y)
+        path.lineTo(x + arrow_size, y + arrow_size / 2)
+        path.lineTo(x, y + arrow_size)
+        path.close()
+        c.drawPath(path, stroke=0, fill=1)
+
+        c.setFont(FONT, self.font_size)
+        c.setFillColor(purple())
+        c.drawString(x + arrow_size + 4, y + 1, self.title)
 
 # 替换为新配色（蓝白+浅灰+淡黄绿，低饱和度）
 # 替换为新配色（蓝白+浅灰+淡黄绿，低饱和度）
@@ -981,33 +1062,40 @@ def get_custom_styles():
 # =========================
 # 核心优化3：表格样式模板
 # =========================
+def add_section_title(elements, title, number):
+    elements.append(SectionTitle(title, number))
+    elements.append(Spacer(1, 6))
+
+
+def add_subsection_title(elements, title):
+    elements.append(SectionSubtitle(title))
+    elements.append(Spacer(1, 4))
+
+
 def get_table_style(template_type="default"):
     """预定义表格样式模板"""
     base_style = [
-        # 原边框：colors.Color(0.8, 0.8, 0.8, 1)（中灰，对比略强）
-        ("GRID", (0, 0), (-1, -1), 0.5, THEME_COLOR["border_gray"]),  # 改为浅灰边框
-        ("PADDING", (0, 0), (-1, -1), 3),
-        # 原隔行背景：[THEME_COLOR["secondary"], colors.white]
-        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [THEME_COLOR["secondary"], colors.white]),  # 浅灰+白，更舒缓
-        # ========== 核心修改：表头背景改为淡黄色 ==========
-        ("BACKGROUND", (0, 0), (-1, 0), THEME_COLOR["header_yellow"]),  # 淡黄色表头
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.white),
+        ("PADDING", (0, 0), (-1, -1), 6),
+        ("BACKGROUND", (0, 0), (-1, 0), purple()),
+        ("BACKGROUND", (0, 1), (-1, -1), light_purple()),
         ("FONTNAME", (0, 0), (-1, 0), FONT),
         ("FONTSIZE", (0, 0), (-1, 0), 10.5),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),  # 表头文字改为黑色（提高对比度）
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
         ("FONTWEIGHT", (0, 0), (-1, 0), "bold"),
         ("FONTNAME", (0, 1), (-1, -1), FONT),
         ("FONTSIZE", (0, 1), (-1, -1), 10),
-        ("TEXTCOLOR", (0, 1), (-1, -1), THEME_COLOR["text"]),  # 深灰文字
+        ("TEXTCOLOR", (0, 1), (-1, -1), colors.white),
         ("ALIGN", (0, 0), (-1, -1), "CENTER"),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
     ]
 
     if template_type == "message":
         base_style.extend([
-            # ========== 同步修改message类型表格的表头背景 ==========
-            ("BACKGROUND", (0, 0), (-1, 0), THEME_COLOR["header_yellow"]),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
-            ("BACKGROUND", (0, 1), (-1, -1), THEME_COLOR["secondary"]),
+            ("BACKGROUND", (0, 0), (-1, 0), purple()),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("BACKGROUND", (0, 1), (-1, -1), light_purple()),
+            ("TEXTCOLOR", (0, 1), (-1, -1), colors.white),
         ])
 
     return TableStyle(base_style)
@@ -1340,7 +1428,7 @@ def generate_beautiful_pdf(sample, variants, output_pdf):
 
 
         # 致客户信
-    elements.append(Paragraph("致受检者", styles["Header1"]))
+    add_section_title(elements, "致受检者", "")
     gender_title = "先生" if sample["gender"] == "男" else "女士"
     elements.append(Paragraph(f"尊敬的{sample['name']}{gender_title}：", styles["Body"]))
     elements.append(Paragraph(
@@ -1372,8 +1460,8 @@ def generate_beautiful_pdf(sample, variants, output_pdf):
     # 第一章节：检测基础信息
     # 新增第一章节封面（图片名可自定义，需放在images文件夹）
     add_chapter_cover(elements, "第一章节：检测基础信息", "章节1封面.png", styles)
-    elements.append(Paragraph("第一章节：检测基础信息", styles["Header1"]))
-    elements.append(Paragraph("一、受检者基本信息", styles["Header2"]))
+    add_section_title(elements, "第一章节：检测基础信息", 1)
+    add_subsection_title(elements, "一、受检者基本信息")
     info_data = [
         ["项目", "详情", "项目", "详情"],
         ["姓名", sample["name"], "性别", sample["gender"]],
@@ -1404,7 +1492,7 @@ def generate_beautiful_pdf(sample, variants, output_pdf):
     elements.append(cancer_excel_table)
 
 
-    elements.append(Paragraph("二、检测说明", styles["Header2"]))
+    add_subsection_title(elements, "二、检测说明")
     elements.append(Paragraph(
         "本次检测覆盖20种常见癌种，通过排查128511种恶性突变，客观反映细胞异变状态。以下为各癌种检测基因数及特异位点数量统计：",
         styles["Body"]
@@ -1471,8 +1559,8 @@ def generate_beautiful_pdf(sample, variants, output_pdf):
  
     # 第二章节：检测结果分析
     add_chapter_cover(elements, "第二章节：检测结果分析", "章节2封面.png", styles)
-    elements.append(Paragraph("第二章节：检测结果分析", styles["Header1"]))
-    elements.append(Paragraph("一、基因变异检测结果", styles["Header2"]))
+    add_section_title(elements, "第二章节：检测结果分析", 2)
+    add_subsection_title(elements, "一、基因变异检测结果")
     elements.append(Paragraph(
         "以下为检测到的特异性突变位点，详细风险评估见第五部分：",
         styles["Body"]
@@ -1531,10 +1619,10 @@ def generate_beautiful_pdf(sample, variants, output_pdf):
    
     
     # 检测结果综述（核心修改：移除原Excel表格引用逻辑，仅保留突变比例说明）
-    elements.append(Paragraph("二、检测结果综述", styles["Header2"]))
+    add_subsection_title(elements, "二、检测结果综述")
 
     # 突变比例说明（核心修复：使用reportlab支持的<sup>标签实现上标，正确显示10的次方）
-    elements.append(Paragraph("突变比例与细胞量关系", styles["Header2"]))
+    add_subsection_title(elements, "突变比例与细胞量关系")
     # 修复点1：使用<sup>标签包裹次方数，实现上标显示（reportlab的Paragraph支持该HTML标签）
     ratio_data = [
         ["突变比例", "相当于体内变异细胞数量", "临床意义"],
@@ -1577,7 +1665,7 @@ def generate_beautiful_pdf(sample, variants, output_pdf):
     # =========================
     # 核心改动：第五部分 - 特异突变点排查结果（读取Excel数据，映射对应列）
     # =========================
-    elements.append(Paragraph("三、特异突变点排查结果", styles["Header2"]))
+    add_subsection_title(elements, "三、特异突变点排查结果")
     elements.append(Paragraph(
         "以下为各组织特异突变点排查结果，红绿风险条直观展示癌化风险（红=高风险，绿=低风险）：",
         styles["Body"]
@@ -1766,10 +1854,10 @@ def generate_beautiful_pdf(sample, variants, output_pdf):
 #    elements.append(PageBreak())
     # 第三章节：医学解读与建议
     add_chapter_cover(elements, "第三章节：医学解读与建议", "章节3封面.png", styles)
-    elements.append(Paragraph("第三章节：医学解读与建议", styles["Header1"]))
-    elements.append(Paragraph("一、健康干预建议", styles["Header2"]))
+    add_section_title(elements, "第三章节：医学解读与建议", 3)
+    add_subsection_title(elements, "一、健康干预建议")
     # 通用高风险建议
-    elements.append(Paragraph("1. 高风险癌种通用干预建议", styles["Header2"]))
+    add_subsection_title(elements, "1. 高风险癌种通用干预建议")
     advice_data1 = [
         ["干预类型", "具体建议"],
         ["就医建议", "3个月内完成对应癌种的专项影像学/病理学检查"],
@@ -1783,7 +1871,7 @@ def generate_beautiful_pdf(sample, variants, output_pdf):
     elements.append(advice_table1)
 
     # 中风险建议
-    elements.append(Paragraph("2. 中风险癌种干预建议", styles["Header2"]))
+    add_subsection_title(elements, "2. 中风险癌种干预建议")
     advice_data2 = [
         ["干预类型", "具体建议"],
         ["就医建议", "6个月内完成对应癌种的常规筛查"],
@@ -1805,7 +1893,7 @@ def generate_beautiful_pdf(sample, variants, output_pdf):
     elements.append(PageBreak())
 
     # 报告备注与落款（序号调整为第九部分，与新增模块衔接）
-    elements.append(Paragraph("四、报告备注", styles["Header2"]))
+    add_subsection_title(elements, "四、报告备注")
 
     note_data = [
         ["备注项目", "说明"],
@@ -1856,7 +1944,7 @@ def generate_beautiful_pdf(sample, variants, output_pdf):
 # =========================
 def add_cancer_formation_section(elements, styles):
     
-    elements.append(Paragraph("二、癌症形成机制", styles["Header2"]))
+    add_subsection_title(elements, "二、癌症形成机制")
     elements.append(Paragraph(
         "了解癌症的成因，避免误解造成恐慌：",
         styles["Body"]
@@ -1899,7 +1987,7 @@ def add_ctdna_sections(elements, styles):
     # 1. ctDNA解读
     elements.append(PageBreak())
 
-    elements.append(Paragraph("三、cfDNA解读", styles["Header2"]))
+    add_subsection_title(elements, "三、cfDNA解读")
     elements.append(Paragraph(
         "循环肿瘤DNA（circulating tumor DNA，ctDNA）：循环肿瘤DNA（circulating tumor DNA，ctDNA），是一种存在于血浆或血清、脑脊液等体液中的细胞外DNA，主要来自于坏死或凋亡的肿瘤细胞、肿瘤细胞分泌的外排体及循环肿瘤细胞，大小通常为160-180bp。ctDNA是游离DNA（cell-free DNA，cfDNA）中的一类，所占比例低（0.1%-1%之间），因此检测难度较大。二代测序（NGS）技术的成熟，提高了ctDNA检测的灵敏度和准确度，加速推进ctDNA检测应用于临床，协助医生进行个体化诊疗，为肿瘤患者的治疗带来极大的便利。",
         styles["Body"]
@@ -1911,7 +1999,7 @@ def add_ctdna_sections(elements, styles):
     elements.append(Spacer(1, 10))
 
     # # 2. ctDNA共识（表格形式，与PDF一致）
-    elements.append(Paragraph("（一）、ctDNA共识", styles["Header3"]))
+    add_subsection_title(elements, "（一）、ctDNA共识")
 
 
     elements.append(Paragraph(
@@ -1923,7 +2011,7 @@ def add_ctdna_sections(elements, styles):
     ))
     # 3. 循环肿瘤DNA检测特点（表格形式）
     # 循环肿瘤DNA检测特点
-    elements.append(Paragraph("（二）循环肿瘤DNA检测特点", styles["Header3"]))
+    add_subsection_title(elements, "（二）循环肿瘤DNA检测特点")
 
     elements.append(Paragraph(
 
@@ -1934,7 +2022,7 @@ def add_ctdna_sections(elements, styles):
         styles["Body"]
     ))
     # 临床意义
-    elements.append(Paragraph("（三）临床意义", styles["Header3"]))
+    add_subsection_title(elements, "（三）临床意义")
 
     elements.append(Paragraph(
 
@@ -1946,7 +2034,7 @@ def add_ctdna_sections(elements, styles):
         styles["Body"]
     ))
     # 5. 适用人群（表格形式）
-    elements.append(Paragraph("（四）适用人群", styles["Header3"]))
+    add_subsection_title(elements, "（四）适用人群")
 
 
     elements.append(Paragraph(
